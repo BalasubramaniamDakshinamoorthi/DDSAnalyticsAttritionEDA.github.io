@@ -1,0 +1,474 @@
+---
+title: "DDSAnalyticsAttrition"
+author: "BalasubramaniamDakshinamoorthi"
+date: "12/3/2019"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+install.packages("tidyr") ## install
+library(tidyr)          ## load
+install.packages("dplyr") ## install
+library(dplyr)          ## load
+install.packages("stringr") ## install
+install.packages("reshape2") ## install
+library(tidyverse)
+library(reshape2)
+library(ggplot2)
+library(stringr)
+install.packages("mlbench")
+library(mlbench)
+install.packages("caret")
+library(caret)
+library(plyr)     
+library(tidyr)   
+library(dplyr)
+
+```
+## R Markdown
+
+Bring in Data
+
+```{r readfile}
+
+df=read.csv(file.choose(),header=TRUE)
+```
+
+
+#Question 1: To do data analysis identify factors that lead to attrition?
+```{r factors, echo=FALSE}
+control <- trainControl(method="repeatedcv", number=10, repeats=3)
+# train the model
+model <- train(Attrition~., data=df, method="lvq", preProcess="scale", trControl=control)
+# estimate variable importance
+importance <- varImp(model, scale=FALSE)
+# summarize importance
+print(importance)
+# plot importance
+plot(importance)
+```
+                                 Overall        Importance
+Age                              3.37097096-     Yes 
+BusinessTravelTravel_Frequently  3.39733632-     Yes
+BusinessTravelTravel_Rarely      2.31469603-     Yes 
+DepartmentResearch & Development 0.02522449-     No
+DepartmentSales                  0.02332101-     No
+DistanceFromHome                 3.60951514-     Yes
+Education                        0.11556529-     No 
+EducationFieldLife Sciences      0.05170160-     No
+EducationFieldMarketing          0.53532419-     Yes
+EducationFieldMedical            0.05877836-     No 
+EducationFieldOther              0.30116975-     No
+EducationFieldTechnical Degree   0.93258088-     Yes 
+EnvironmentSatisfaction          4.16432953-     Yes
+GenderMale                       1.86094740-     Yes
+JobInvolvement                   3.85797696-     Yes
+JobLevel                         0.27218782*     May Be
+JobRoleHuman Resources           0.02915125      No 
+JobRoleLaboratory Technician     2.94205866-     Yes
+JobRoleManager                   0.94174152-     Yes
+JobRoleManufacturing Director    0.24557120-     May Be
+JobRoleResearch Director         0.06293447-     No  
+JobRoleResearch Scientist        1.68219281-     Yes
+JobRoleSales Executive           1.57859760-     Yes
+JobRoleSales Representative      2.18420868-     Yes
+JobSatisfaction                  3.59627140-     Yes
+MaritalStatusMarried             1.68189531-     Yes
+MaritalStatusSingle              4.92826681-     Yes
+MonthlyIncome                    0.31957312-     May Be
+NumCompaniesWorked               3.83038235-     Yes
+OverTimeYes                      8.02574274-     Yes
+PercentSalaryHike                0.48017347-     Yes
+PerformanceRating                0.46448923-     May Be
+RelationshipSatisfaction         2.64289543-     Yes
+TotalWorkingYears                0.36628186-     May Be
+TrainingTimesLastYear            1.15222224-     Yes
+WorkLifeBalance                  2.87355896-     Yes
+YearsAtCompany                   1.81867995-     Yes
+YearsInCurrentRole               2.61057126-     Yes
+YearsSinceLastPromotion          3.19963362-     Yes
+YearsWithCurrManager             2.26107988-     Yes
+
+```{r model}
+str(att.df)
+train <- df[1:799,]
+test<- df[800:1400,]
+model <- glm(Attrition ~ Age+BusinessTravel+Department+DistanceFromHome+
+               Education+EducationField+EnvironmentSatisfaction+Gender+JobInvolvement+
+               JobLevel+JobRole+JobSatisfaction+MaritalStatus+MonthlyIncome+NumCompaniesWorked+
+               OverTime+PercentSalaryHike+PerformanceRating+RelationshipSatisfaction+
+               TotalWorkingYears+TrainingTimesLastYear+WorkLifeBalance+ 
+               YearsAtCompany+YearsInCurrentRole+YearsSinceLastPromotion+
+               YearsWithCurrManager,family=binomial(link='logit'),data=train)
+summary(model)
+```
+
+Call:
+glm(formula = Attrition ~ Age + BusinessTravel + Department + 
+    DistanceFromHome + Education + EducationField + EnvironmentSatisfaction + 
+    Gender + JobInvolvement + JobLevel + JobRole + JobSatisfaction + 
+    MaritalStatus + MonthlyIncome + NumCompaniesWorked + OverTime + 
+    PercentSalaryHike + PerformanceRating + RelationshipSatisfaction + 
+    TotalWorkingYears + TrainingTimesLastYear + WorkLifeBalance + 
+    YearsAtCompany + YearsInCurrentRole + YearsSinceLastPromotion + 
+    YearsWithCurrManager, family = binomial(link = "logit"), 
+    data = train)
+
+Deviance Residuals: 
+     Min        1Q    Median        3Q       Max  
+-1.75508  -0.43147  -0.20751  -0.06315   2.95812  
+
+Coefficients:
+                                   Estimate Std. Error z value Pr(>|z|)    
+(Intercept)                      -1.148e+01  8.839e+02  -0.013 0.989636    
+Age                               3.477e-04  5.885e-04   0.591 0.554632    
+BusinessTravelTravel_Frequently   1.645e+00  5.441e-01   3.023 0.002503 ** 
+BusinessTravelTravel_Rarely       9.179e-01  4.832e-01   1.900 0.057485 .  
+DepartmentResearch & Development  1.402e+01  8.839e+02   0.016 0.987341    
+DepartmentSales                   1.391e+01  8.839e+02   0.016 0.987444    
+DistanceFromHome                  4.605e-02  1.539e-02   2.992 0.002773 ** 
+Education                        -1.315e-01  1.259e-01  -1.045 0.296176    
+EducationFieldLife Sciences      -1.384e+00  1.217e+00  -1.137 0.255545    
+EducationFieldMarketing          -1.552e+00  1.292e+00  -1.201 0.229743    
+EducationFieldMedical            -1.458e+00  1.213e+00  -1.201 0.229594    
+EducationFieldOther              -9.641e-01  1.297e+00  -0.743 0.457240    
+EducationFieldTechnical Degree   -8.324e-01  1.257e+00  -0.662 0.507777    
+EnvironmentSatisfaction          -3.202e-01  1.201e-01  -2.666 0.007665 ** 
+GenderMale                        1.358e-01  2.661e-01   0.510 0.609955    
+JobInvolvement                   -8.595e-01  1.807e-01  -4.756 1.97e-06 ***
+JobLevel                         -2.407e-01  4.663e-01  -0.516 0.605703    
+JobRoleHuman Resources            1.517e+01  8.839e+02   0.017 0.986306    
+JobRoleLaboratory Technician      1.142e+00  6.388e-01   1.787 0.073907 .  
+JobRoleManager                    8.953e-02  1.210e+00   0.074 0.941010    
+JobRoleManufacturing Director    -1.272e+00  9.129e-01  -1.393 0.163550    
+JobRoleResearch Director         -2.302e+00  1.488e+00  -1.547 0.121891    
+JobRoleResearch Scientist         5.533e-01  6.409e-01   0.863 0.387954    
+JobRoleSales Executive            8.606e-01  1.388e+00   0.620 0.535338    
+JobRoleSales Representative       2.504e+00  1.468e+00   1.706 0.088074 .  
+JobSatisfaction                  -5.917e-01  1.196e-01  -4.946 7.56e-07 ***
+MaritalStatusMarried              9.688e-01  4.067e-01   2.382 0.017223 *  
+MaritalStatusSingle               1.828e+00  4.107e-01   4.451 8.57e-06 ***
+MonthlyIncome                     1.316e-04  1.266e-04   1.039 0.298598    
+NumCompaniesWorked                2.530e-01  5.936e-02   4.262 2.03e-05 ***
+OverTimeYes                       2.027e+00  2.738e-01   7.403 1.33e-13 ***
+PercentSalaryHike                 8.959e-03  5.513e-02   0.163 0.870904    
+PerformanceRating                 1.893e-01  5.697e-01   0.332 0.739715    
+RelationshipSatisfaction         -2.000e-01  1.171e-01  -1.709 0.087498 .  
+TotalWorkingYears                -1.256e-01  3.913e-02  -3.210 0.001326 ** 
+TrainingTimesLastYear            -2.892e-01  1.133e-01  -2.553 0.010687 *  
+WorkLifeBalance                  -6.008e-01  1.748e-01  -3.437 0.000588 ***
+YearsAtCompany                    1.127e-01  5.540e-02   2.034 0.041967 *  
+YearsInCurrentRole               -1.649e-01  6.497e-02  -2.538 0.011147 *  
+YearsSinceLastPromotion           2.649e-01  6.163e-02   4.298 1.72e-05 ***
+YearsWithCurrManager             -1.333e-01  6.955e-02  -1.916 0.055363  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 706.43  on 798  degrees of freedom
+Residual deviance: 425.69  on 758  degrees of freedom
+AIC: 507.69
+
+Number of Fisher Scoring iterations: 15
+
+
+#Question 2   Top three factors that contribute to turnover (backed up by evidence provided by analysis)
+##Top Three (Positive) factors
+OverTimeYes                       2.027e+00  2.738e-01   7.403 1.33e-13 ***
+MaritalStatusSingle               1.828e+00  4.107e-01   4.451 8.57e-06 ***
+YearsSinceLastPromotion           2.649e-01  6.163e-02   4.298 1.72e-05 ***
+##Top Three (Negative) factors
+JobSatisfaction                  -5.917e-01  1.196e-01  -4.946 7.56e-07 ***
+JobInvolvement                   -8.595e-01  1.807e-01  -4.756 1.97e-06 ***
+WorkLifeBalance                  -6.008e-01  1.748e-01  -3.437 0.000588 **
+#Top Three factors
+OverTimeYes                      8.02574274-     Yes
+MaritalStatusSingle              4.92826681-     Yes
+EnvironmentSatisfaction          4.16432953-     Yes
+JobInvolvement                   3.85797696-     Yes
+NumCompaniesWorked               3.83038235-     Yes
+DistanceFromHome                 3.60951514-     Yes
+JobSatisfaction                  3.59627140-     Yes
+BusinessTravelTravel_Frequently  3.39733632-     Yes
+Age                              3.37097096-     Yes
+YearsSinceLastPromotion          3.19963362-     Yes
+
+```{r packages, echo=FALSE}
+#Get the details of each explanatory variable and distribution 
+install.packages("psych") ## install
+library(psych)
+describe(att.df)
+table(Attrition)
+table(BusinessTravel)
+table(Department)
+table(EducationField)
+table(Education)
+table(EnvironmentSatisfaction)
+table(Gender)
+table(JobInvolvement)
+table(JobRole)
+table(JobLevel)
+table(JobSatisfaction)
+table(MaritalStatus)
+table(OverTime)
+```
+# Explanatory Variable Distribution
+table(Attrition)
+Attrition
+  No  Yes 
+1228  242 
+#Dataset with only 242 left employees, 1228 current employees 
+table(BusinessTravel)
+BusinessTravel
+       Non-Travel Travel_Frequently     Travel_Rarely 
+              142               282              1046 
+#Dataset with only 282 frequent travellers
+table(Department)
+Department
+       Human Resources Research & Development                  Sales 
+                    63                    961                    446 
+#Dataset has 446 Sales Team
+table(EducationField)
+EducationField
+ Human Resources    Life Sciences        Marketing          Medical            Other Technical Degree 
+              27              606              159              464               82              132 
+table(Education)
+Education
+  1   2   3   4   5 
+170 282 572 398  48 
+table(EnvironmentSatisfaction)
+EnvironmentSatisfaction
+  1   2   3   4 
+284 287 453 446 
+#Dataset with only 284 high satisfaction
+table(Gender)
+Gender
+Female   Male 
+   588    882 
+#Dataset has majority Male Employees,40 percent females ,60 percent males.
+table(JobInvolvement)
+JobInvolvement
+  1   2   3   4 
+ 83 375 868 144 
+table(JobInvolvement)
+#Dataset has only 144 employees have high job involvement.
+table(JobRole)
+JobRole
+Healthcare Representative           Human Resources     Laboratory Technician                   Manager 
+                      131                        52                       259                       102 
+   Manufacturing Director         Research Director        Research Scientist           Sales Executive 
+                      145                        80                       292                       326 
+     Sales Representative 
+                       83 
+table(JobLevel)
+JobLevel
+  1   2   3   4   5 
+543 534 218 106  69 
+table(JobSatisfaction)
+JobSatisfaction
+  1   2   3   4 
+289 280 442 459 
+#Dataset has only 459 employees have high job satisfaction, 289 have very low job satisfaction.
+table(MaritalStatus)
+MaritalStatus
+Divorced  Married   Single 
+     327      673      470 
+#Dataset has only 470 employees are single, they are higher chance leaving company.
+table(OverTime)
+OverTime
+  No  Yes 
+1054  416 
+#Dataset has 1054 employees have no overtime, so they are candidates, they have high chance of leaving company.
+
+#Invidual Explanatory Variables Relationship with Attrition
+```
+mytable<- xtabs(~PerformanceRating+Attrition,data=att.df)
+round(prop.table(mytable,1)*100,2)
+mytable<- xtabs(~OverTime+Attrition,data=att.df)
+round(prop.table(mytable,1)*100,2)
+mytable<- xtabs(~WorkLifeBalance+Attrition,data=att.df) 
+round(prop.table(mytable,1)*100,2)
+mytable<- xtabs(~JobRole+Attrition,data=att.df) 
+round(prop.table(mytable,1)*100,2)
+mytable<- xtabs(~NumCompaniesWorked+Attrition,data=att.df)
+round(prop.table(mytable,1)*100,2)
+mytable<- xtabs(~MaritalStatus+Attrition,data=att.df) 
+round(prop.table(mytable,1)*100,2) 
+mytable<- xtabs(~Gender+Attrition,data=att.df) 
+round(prop.table(mytable,1)*100,2)
+mytable<- xtabs(~EnvironmentSatisfaction+Attrition,data=att.df) 
+round(prop.table(mytable,1)*100,2)
+mytable<- xtabs(~BusinessTravel+Attrition,data=att.df) 
+round(prop.table(mytable,1)*100,2)
+mytable<- xtabs(~EducationField+Attrition,data=att.df) 
+round(prop.table(mytable,1)*100,2)
+mytable<- xtabs(~JobSatisfaction+Attrition,data=att.df)
+round(prop.table(mytable,1)*100,2)
+mytable<- xtabs(~Education+Attrition,data=att.df) 
+round(prop.table(mytable,1)*100,2)
+```
+## Including Explanatory Variable Relationship with Attrition
+> mytable<- xtabs(~PerformanceRating+Attrition,data=att.df)
+> round(prop.table(mytable,1)*100,2)
+                 Attrition
+PerformanceRating    No   Yes
+                3 83.60 16.40
+                4 83.19 16.81
+#High Performance Rating less chance of leaving company.
+> mytable<- xtabs(~OverTime+Attrition,data=att.df)
+> round(prop.table(mytable,1)*100,2)
+        Attrition
+OverTime    No   Yes
+     No  88.43 11.57
+     Yes 71.15 28.85
+#No Overtime high chance of leaving company.
+> mytable<- xtabs(~WorkLifeBalance+Attrition,data=att.df) 
+> round(prop.table(mytable,1)*100,2)
+               Attrition
+WorkLifeBalance    No   Yes
+              1 72.50 27.50
+              2 84.01 15.99
+              3 84.43 15.57
+              4 83.01 16.99
+#Low WorkLife Balance high chance of leaving company.
+> mytable<- xtabs(~JobRole+Attrition,data=att.df) 
+> round(prop.table(mytable,1)*100,2)
+                           Attrition
+JobRole                        No   Yes
+  Healthcare Representative 87.79 12.21
+  Human Resources           78.85 21.15
+  Laboratory Technician     79.92 20.08
+  Manager                   92.16  7.84
+  Manufacturing Director    89.66 10.34
+  Research Director         96.25  3.75
+  Research Scientist        81.16 18.84
+  Sales Executive           84.05 15.95
+  Sales Representative      63.86 36.14
+#Sales Representative Job Role has high chance of leaving company.
+> mytable<- xtabs(~NumCompaniesWorked+Attrition,data=att.df)
+> round(prop.table(mytable,1)*100,2)
+                  Attrition
+NumCompaniesWorked    No   Yes
+                 0 88.32 11.68
+                 1 82.92 17.08
+                 2 85.62 14.38
+                 3 87.42 12.58
+                 4 87.77 12.23
+                 5 77.78 22.22
+                 6 71.43 28.57
+                 7 77.03 22.97
+                 8 85.71 14.29
+                 9 73.08 26.92
+#Employee worked more companies high chance of leaving company.
+> mytable<- xtabs(~MaritalStatus+Attrition,data=att.df) 
+> round(prop.table(mytable,1)*100,2) 
+             Attrition
+MaritalStatus    No   Yes
+     Divorced 89.60 10.40
+     Married  86.03 13.97
+     Single   75.74 24.26
+#Singles-Not Married high chance of leaving company.
+> mytable<- xtabs(~Gender+Attrition,data=att.df) 
+> round(prop.table(mytable,1)*100,2)
+        Attrition
+Gender      No   Yes
+  Female 85.20 14.80
+  Male   82.43 17.57
+#Males are little higher chance of leaving company compare to females.
+> mytable<- xtabs(~EnvironmentSatisfaction+Attrition,data=att.df) 
+> round(prop.table(mytable,1)*100,2)
+                       Attrition
+EnvironmentSatisfaction    No   Yes
+                      1 74.30 25.70
+                      2 86.76 13.24
+                      3 85.43 14.57
+                      4 85.43 14.57
+#Low EmploymentSatisfaction has high chance of leaving company.
+> mytable<- xtabs(~BusinessTravel+Attrition,data=att.df) 
+> round(prop.table(mytable,1)*100,2)
+                   Attrition
+BusinessTravel         No   Yes
+  Non-Travel        92.25  7.75
+  Travel_Frequently 74.11 25.89
+  Travel_Rarely     84.89 15.11
+#Employees who travel frequently have high chance of leaving company.
+> mytable<- xtabs(~EducationField+Attrition,data=att.df) 
+> round(prop.table(mytable,1)*100,2)
+                  Attrition
+EducationField        No   Yes
+  Human Resources  74.07 25.93
+  Life Sciences    84.98 15.02
+  Marketing        82.39 17.61
+  Medical          83.84 16.16
+  Other            84.15 15.85
+  Technical Degree 78.79 21.21
+> mytable<- xtabs(~JobSatisfaction+Attrition,data=att.df)
+> round(prop.table(mytable,1)*100,2)
+               Attrition
+JobSatisfaction    No   Yes
+              1 77.85 22.15
+              2 82.14 17.86
+              3 83.71 16.29
+              4 87.80 12.20
+#Low JobSatisfaction has high chance of leaving company.
+> mytable<- xtabs(~Education+Attrition,data=att.df) 
+> round(prop.table(mytable,1)*100,2)
+         Attrition
+Education    No   Yes
+        1 82.35 17.65
+        2 82.27 17.73
+        3 83.22 16.78
+        4 84.92 15.08
+        5 87.50 12.50
+
+#Education has not having much influence of Attriton/leaving company.
+
+#Question 3: Job role specific trends that may exist in the data set.
+
+```{r role}
+```
+##Job Role Specific Trends
+                          Attrition
+JobRole                        No   Yes
+  Healthcare Representative 87.79 12.21
+  Human Resources           78.85 21.15
+  Laboratory Technician     79.92 20.08
+  Manager                   92.16  7.84
+  Manufacturing Director    89.66 10.34
+  Research Director         96.25  3.75
+  Research Scientist        81.16 18.84
+  Sales Executive           84.05 15.95
+  Sales Representative      63.86 36.14
+#Sales Representative Job Role has high chance of leaving company.
+#Human Resources Job Role next high chance of leaving company.
+#Research Scientist Job Role has next high chance of leaving company.
+
+```
+#Question 4: Any other interesting trends and observations from your analysis.
+    ##The dataset is imbalanced with the only 242 left employees-18 percent of population, 1228 current employees-82 percent of population.
+	##People who have to work overtime show higher percentage of leavers compared to their counterparts.
+	##Single employees show the highest percentage of leavers, compared to Married and Divorced counterparts.
+	##The strongest positive correlations with the target features are: Performance Rating, Monthly Rate, Num Companies Worked, Distance From Home.
+    ##The strongest negative correlations with the target features are: Total Working Years, Job Level, Years In Current Role, and Monthly Income.
+    ##About 10% of leavers left when they reach their 2-year anniversary at the company.
+    ##People who live further away from their work show higher percentage of leavers compared to their counterparts.
+    ##People who travel frequently show higher percentage of leavers compared to their counterparts.
+    ##Employees that have already worked at many companies previously,higher percentage of leavers compared to their counterparts.
+
+```{r extra}
+
+#Anyother extra details
+
+
+```
+
+
+
+
+
+
+
+
+
+
